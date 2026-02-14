@@ -7,6 +7,11 @@ export class PrismaService extends PrismaClient implements OnModuleInit, OnModul
     super({
       log: ['query', 'error', 'warn'], // remove 'query' in production
       // datasources - Prisma auto-detects DATABASE_URL from the .env file
+      // datasources: {
+      //   db: {
+      //     url: process.env.DATABASE_URL,
+      //   },
+      // },
     });
   }
 

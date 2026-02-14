@@ -32,7 +32,10 @@ export default tseslint.config(
       // "prettier/prettier": ["error", { endOfLine: "auto" }],
       // "prettier/prettier": ["warn", { endOfLine: "auto" }],
       "prettier/prettier": "off",
-
+      '@typescript-eslint/no-unsafe-call': 'off',
+      // '@typescript-eslint/no-unsafe-member-access': 'off',
+      // '@typescript-eslint/no-unsafe-return': 'off',
+      // '@typescript-eslint/no-unsafe-assignment': 'off',
 
     },
   },
