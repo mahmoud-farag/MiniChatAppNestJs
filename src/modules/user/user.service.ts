@@ -12,11 +12,12 @@ export class UserService {
 
     async create(user: Prisma.UserCreateInput) {
 
-        await this.prisma.user.create({
+       const {password: _, ...createdUser} =  await this.prisma.user.create({
             data: user,
         });
 
-        return user;
+
+        return createdUser;
 
     }
 

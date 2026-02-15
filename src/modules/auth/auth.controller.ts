@@ -17,9 +17,4 @@ export class AuthController {
     signin(@Body() reqBody: SigninUserDto){
         return this.authService.signin(reqBody);
     }
-
-    @Post('log-out')
-    logout(){
-        return this.authService.logout();
-    }
 }

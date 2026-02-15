@@ -20,7 +20,7 @@ export class AuthService {
         const user = await this.userService.findUser({email: reqBody.email});
 
         if (user) 
-            throw new BadRequestException("User already exists");
+            throw new BadRequestException("Email already exists");
 
         const hashedPassword = await hashPassword(reqBody.password);
 
@@ -30,29 +30,35 @@ export class AuthService {
             throw new InternalServerErrorException("Failed to hash password");
         
 
-        const result = await this.userService.create(reqBody);
+        const createUser = await this.userService.create(reqBody);
 
-        return { result };
+        const accessToken = this.generateAccessToken({ sub: createUser.id, email: createUser.email });
+
+        return { user: createUser, accessToken };
     }
 
     async signin(reqBody: SigninUserDto) {
 
-        if (!reqBody?.email || !reqBody?.password)
-            throw new BadRequestException("Email or password is missing");
+        if (!reqBody?.email)
+            throw new BadRequestException("Email is missing");
+
+        if (!reqBody?.password)
+            throw new BadRequestException("Password is missing");
         
         const user = await this.userService.findUser({email: reqBody.email});
 
         if (!user)
-            throw new NotFoundException("User not found");
+            throw new NotFoundException("Invalid credentials");
 
         const isPasswordMatched = await comparePassword(reqBody.password, user.password);
 
         if (!isPasswordMatched)
             throw new BadRequestException("Invalid credentials");
 
+        const { password: _, ...userWithoutPassword } = user;
         const accessToken = this.generateAccessToken({ sub: user.id, email: user.email });
 
-        return { user, accessToken };
+        return { user: userWithoutPassword, accessToken };
     }
 
     private generateAccessToken( payload: { sub: string; email: string }): string {
@@ -62,7 +68,4 @@ export class AuthService {
         return accessToken;    
     }
 
-    logout() {
-        return "logout";
-    }
 }
