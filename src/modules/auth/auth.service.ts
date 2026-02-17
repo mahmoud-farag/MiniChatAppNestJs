@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { CreateUserDto, SigninUserDto } from 'src/common/dtos';
-import { comparePassword, hashPassword } from 'src/common/utilites';
+import { comparePassword, hashPassword } from 'src/common/utilities';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { UserService } from 'src/modules/user/user.service';
 
