@@ -1,7 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
+import { IUser } from 'src/common/inderfaces';
 
 
 
@@ -25,29 +26,59 @@ export class UserService {
 
     }
 
-    async findUser(where: Prisma.UserWhereUniqueInput) {
+    async findUser({ where, select, omit }: {where: Prisma.UserWhereUniqueInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect } ) {
         
-        const user = await this.prisma.user.findUnique({ where });
+        const query: Prisma.UserFindUniqueArgs =  { where };
+
+        if (select) 
+            query.select = select;
+
+        if (omit)
+            query.omit = omit;
+
+        const user = await this.prisma.user.findUnique(query);
 
         return user;
 
     }
 
 
-    async getProfileAvatar({user}: {user: Prisma.UserWhereUniqueInput}){ 
+    async getProfileAvatar({ user }: { user: Prisma.UserWhereUniqueInput }): Promise<{signedUrl: string}>{ 
 
 
-        const userInfo = await this.findUser({id: user.id});
+        const params = {
+            where: { id: user.id },
+            select: { avatarS3FileName: true, avatarS3Folder: true }
+        };
 
-        const avatarS3Info = userInfo?.profilePic;
+        const userInfo = await this.findUser(params);
 
-        // const fileName = avatarS3Info?.fileName;
-        // const folder = avatarS3Info?.folder;
 
-        const result = await this.uploadService.getPresignedReadUrl({fileName: 'test', folder: 'test'}, { expiresIn: 60 * 60 });
+        if (!userInfo?.avatarS3FileName || !userInfo?.avatarS3Folder) {
+            throw new BadRequestException('S3 file name and folder not found');
+        }
 
-        return result;
+        const fileName = userInfo.avatarS3FileName;
+        const folder = userInfo.avatarS3Folder;
+
+        const { signedUrl } = await this.uploadService.getPresignedReadUrl({ fileName, folder }, { expiresIn: 24 * 60 * 60 });
+
+        return { signedUrl };
 
     }
+
+    async getUserProfile({ user }: { user: Prisma.UserWhereUniqueInput }): Promise<IUser> {
+
+        const params = {
+            where: { id: user.id },
+            select: { avatarS3FileName: true, avatarS3Folder: true }
+        };
+
+        const userInfo = await this.findUser(params);
+
+        return userInfo as IUser;
+
+    }
+
 
 }
