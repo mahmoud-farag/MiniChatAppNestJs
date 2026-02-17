@@ -1,12 +1,8 @@
 import { Controller, Get, Request } from '@nestjs/common';
 import { UserService } from './user.service';
-import { Prisma } from '@prisma/client';
-import { Request as ExpressRequest } from 'express';
+import type { IRequestWithUser } from 'src/common/inderfaces';
 
 
-interface RequestWithUser extends ExpressRequest {
-    user: Prisma.UserWhereUniqueInput;
-};
 
 @Controller('user')
 export class UserController {
@@ -14,7 +10,7 @@ export class UserController {
     constructor(private readonly userService: UserService) {}
 
     @Get('get-profile-avatar')
-    async getProfileAvatar(@Request() req: RequestWithUser) {
+    async getProfileAvatar(@Request() req: IRequestWithUser) {
 
         const loggedUser = req.user;
 
@@ -25,7 +21,7 @@ export class UserController {
     }
 
     @Get('get-profile')
-    async getProfile(@Request() req: RequestWithUser) {
+    async getProfile(@Request() req: IRequestWithUser) {
 
         const user = req.user;
 
@@ -36,7 +32,7 @@ export class UserController {
     }
 
     @Get('all')
-    async getUsers(@Request() req: RequestWithUser) {
+    async getUsers(@Request() req: IRequestWithUser) {
 
         const loggedUser = req.user;
         const users = await this.userService.getUsers({user: loggedUser});

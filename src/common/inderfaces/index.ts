@@ -1,4 +1,6 @@
 
+import { Request as ExpressRequest } from 'express';
+import { Prisma } from '@prisma/client';
 
 //* Start User interfaces
 
@@ -12,5 +14,10 @@ export interface IUser {
     createdAt: Date;
     updatedAt: Date;
 };
+
+export interface IRequestWithUser extends ExpressRequest {
+    user: Prisma.UserWhereUniqueInput;
+};
+
 //* End User interfaces
 
