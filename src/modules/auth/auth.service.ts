@@ -17,7 +17,7 @@ export class AuthService {
     async signup(reqBody: CreateUserDto) {
 
 
-        const user = await this.userService.findUser({email: reqBody.email});
+        const user = await this.userService.findUser({where: {email: reqBody.email}, select: {password: true, id: true, email: true}});
 
         if (user) 
             throw new BadRequestException("Email already exists");
@@ -45,7 +45,7 @@ export class AuthService {
         if (!reqBody?.password)
             throw new BadRequestException("Password is missing");
         
-        const user = await this.userService.findUser({email: reqBody.email});
+        const user = await this.userService.findUser({where: {email: reqBody.email}, select: {password: true, id: true, email: true}});
 
         if (!user)
             throw new NotFoundException("Invalid credentials");

@@ -6,7 +6,7 @@ import { Request as ExpressRequest } from 'express';
 
 interface RequestWithUser extends ExpressRequest {
     user: Prisma.UserWhereUniqueInput;
-}
+};
 
 @Controller('user')
 export class UserController {
@@ -16,9 +16,9 @@ export class UserController {
     @Get('get-profile-avatar')
     async getProfileAvatar(@Request() req: RequestWithUser) {
 
-        const user = req.user;
+        const loggedUser = req.user;
 
-        const result = await this.userService.getProfileAvatar({user});
+        const result = await this.userService.getProfileAvatar({user: loggedUser});
 
         return result;
 
@@ -32,6 +32,16 @@ export class UserController {
         const result = await this.userService.getUserProfile({user});
 
         return result;
+
+    }
+
+    @Get('all')
+    async getUsers(@Request() req: RequestWithUser) {
+
+        const loggedUser = req.user;
+        const users = await this.userService.getUsers({user: loggedUser});
+
+        return users;
 
     }
 

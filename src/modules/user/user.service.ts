@@ -42,6 +42,22 @@ export class UserService {
 
     }
 
+    async findUsers({ where, select, omit }: {where: Prisma.UserWhereInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect } ) {
+        
+        const query: Prisma.UserFindManyArgs =  { where };
+
+        if (select) 
+            query.select = select;
+
+        if (omit)
+            query.omit = omit;
+
+        const users = await this.prisma.user.findMany(query);
+
+        return users;
+
+    }
+
 
     async getProfileAvatar({ user }: { user: Prisma.UserWhereUniqueInput }): Promise<{signedUrl: string}>{ 
 
@@ -77,6 +93,20 @@ export class UserService {
         const userInfo = await this.findUser(params);
 
         return userInfo as IUser;
+
+    }
+
+
+    async getUsers({ user }: { user: Prisma.UserWhereUniqueInput }):Promise<IUser[]> {
+
+        // Get All users expect the logged user
+        const params = {
+            where: { id: { not : user.id} },
+        };
+
+        const users = await this.findUsers(params);
+
+        return users as IUser[];
 
     }
 
