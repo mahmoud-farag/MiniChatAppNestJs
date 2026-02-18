@@ -5,16 +5,16 @@ import { S3FoldersEnum } from 'src/common/enums';
 @Controller('upload')
 export class UploadController {
 
-  constructor(private readonly uploadService: UploadService) {}
+  constructor(private readonly uploadService: UploadService) { }
 
   @Post('presigned-url')
-  getPresignedUploadUrl(
-    @Body() body: { fileName: string; contentType: string },
-  ) {
-    
+  async getPresignedUploadUrl(@Body() body: { fileName: string; contentType: string }) {
+
     const folder = S3FoldersEnum.AVATARS_IMAGES;
 
-    return this.uploadService.getPresignedUploadUrl({fileName: body.fileName, folder, contentType: body.contentType}, { expiresIn: 60 * 60 });
+    const response = await this.uploadService.getPresignedUploadUrl({ fileName: body.fileName, folder, contentType: body.contentType }, { expiresIn: 60 * 60 });
+
+    return { message: "Presigned URL generated successfully", data: response };
   }
 
   // @Get('signed-url/:key')

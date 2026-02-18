@@ -1,0 +1,1 @@
+export { default as AllExceptionsFilter } from './exceptions.filter';

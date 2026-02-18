@@ -7,16 +7,16 @@ import type { IRequestWithUser } from 'src/common/inderfaces';
 @Controller('user')
 export class UserController {
 
-    constructor(private readonly userService: UserService) {}
+    constructor(private readonly userService: UserService) { }
 
     @Get('get-profile-avatar')
     async getProfileAvatar(@Request() req: IRequestWithUser) {
 
         const loggedUser = req.user;
 
-        const result = await this.userService.getProfileAvatar({user: loggedUser});
+        const result = await this.userService.getProfileAvatar({ user: loggedUser });
 
-        return result;
+        return { message: "Profile avatar fetched successfully", data: result };
 
     }
 
@@ -25,9 +25,9 @@ export class UserController {
 
         const user = req.user;
 
-        const result = await this.userService.getUserProfile({user});
+        const result = await this.userService.getUserProfile({ user });
 
-        return result;
+        return { message: "Profile fetched successfully", data: result };
 
     }
 
@@ -35,9 +35,9 @@ export class UserController {
     async getUsers(@Request() req: IRequestWithUser) {
 
         const loggedUser = req.user;
-        const users = await this.userService.getUsers({user: loggedUser});
+        const users = await this.userService.getUsers({ user: loggedUser });
 
-        return users;
+        return { message: "Users fetched successfully", data: users };
 
     }
 

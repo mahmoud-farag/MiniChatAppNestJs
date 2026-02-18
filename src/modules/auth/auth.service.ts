@@ -12,23 +12,23 @@ export class AuthService {
         private readonly prisma: PrismaService,
         private readonly userService: UserService,
         private readonly jwtService: JwtService,
-    ) {}
+    ) { }
 
     async signup(reqBody: CreateUserDto) {
 
 
-        const user = await this.userService.findUser({where: {email: reqBody.email}, select: {password: true, id: true, email: true}});
+        const user = await this.userService.findUser({ where: { email: reqBody.email }, select: { password: true, id: true, email: true } });
 
-        if (user) 
+        if (user)
             throw new BadRequestException("Email already exists");
 
         const hashedPassword = await hashPassword(reqBody.password);
 
         if (hashedPassword)
             reqBody.password = hashedPassword;
-        else 
+        else
             throw new InternalServerErrorException("Failed to hash password");
-        
+
 
         const createUser = await this.userService.create(reqBody);
 
@@ -44,8 +44,8 @@ export class AuthService {
 
         if (!reqBody?.password)
             throw new BadRequestException("Password is missing");
-        
-        const user = await this.userService.findUser({where: {email: reqBody.email}, select: {password: true, id: true, email: true}});
+
+        const user = await this.userService.findUser({ where: { email: reqBody.email }, select: { password: true, id: true, email: true } });
 
         if (!user)
             throw new NotFoundException("Invalid credentials");
@@ -61,11 +61,11 @@ export class AuthService {
         return { user: userWithoutPassword, accessToken };
     }
 
-    private generateAccessToken( payload: { sub: string; email: string }): string {
+    private generateAccessToken(payload: { sub: string; email: string }): string {
 
-        const accessToken = this.jwtService.sign({ sub: payload.sub, email: payload.email });        
-        
-        return accessToken;    
+        const accessToken = this.jwtService.sign({ sub: payload.sub, email: payload.email });
+
+        return accessToken;
     }
 
 }
