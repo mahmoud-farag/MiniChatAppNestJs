@@ -32,7 +32,8 @@ export class AuthService {
 
         const createUser = await this.userService.create(reqBody);
 
-        const accessToken = this.generateAccessToken({ sub: createUser.id, email: createUser.email });
+
+        const accessToken = this.generateAccessToken({ ...createUser, sub: createUser.id });
 
         return { user: createUser, accessToken };
     }
@@ -45,7 +46,7 @@ export class AuthService {
         if (!reqBody?.password)
             throw new BadRequestException("Password is missing");
 
-        const user = await this.userService.findUser({ where: { email: reqBody.email }, select: { password: true, id: true, email: true } });
+        const user = await this.userService.findUser({ where: { email: reqBody.email } });
 
         if (!user)
             throw new NotFoundException("Invalid credentials");
@@ -56,7 +57,8 @@ export class AuthService {
             throw new BadRequestException("Invalid credentials");
 
         const { password: _, ...userWithoutPassword } = user;
-        const accessToken = this.generateAccessToken({ sub: user.id, email: user.email });
+
+        const accessToken = this.generateAccessToken({ ...userWithoutPassword, sub: userWithoutPassword.id });
 
         return { user: userWithoutPassword, accessToken };
     }

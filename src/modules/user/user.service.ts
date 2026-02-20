@@ -10,14 +10,14 @@ import { IUser } from 'src/common/inderfaces';
 export class UserService {
 
     constructor(
-        private readonly prisma: PrismaService, 
+        private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
-    ) {}
+    ) { }
 
 
     async create(user: Prisma.UserCreateInput) {
 
-       const {password: _, ...createdUser} =  await this.prisma.user.create({
+        const { password: _, ...createdUser } = await this.prisma.user.create({
             data: user,
         });
 
@@ -26,11 +26,11 @@ export class UserService {
 
     }
 
-    async findUser({ where, select, omit }: {where: Prisma.UserWhereUniqueInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect } ) {
-        
-        const query: Prisma.UserFindUniqueArgs =  { where };
+    async findUser({ where, select, omit }: { where: Prisma.UserWhereUniqueInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect }) {
 
-        if (select) 
+        const query: Prisma.UserFindUniqueArgs = { where };
+
+        if (select)
             query.select = select;
 
         if (omit)
@@ -42,11 +42,11 @@ export class UserService {
 
     }
 
-    async findUsers({ where, select, omit }: {where: Prisma.UserWhereInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect } ) {
-        
-        const query: Prisma.UserFindManyArgs =  { where };
+    async findUsers({ where, select, omit }: { where: Prisma.UserWhereInput, select?: Prisma.UserSelect, omit?: Prisma.UserSelect }) {
 
-        if (select) 
+        const query: Prisma.UserFindManyArgs = { where };
+
+        if (select)
             query.select = select;
 
         if (omit)
@@ -59,25 +59,26 @@ export class UserService {
     }
 
 
-    async getProfileAvatar({ user }: { user: Prisma.UserWhereUniqueInput }): Promise<{signedUrl: string}>{ 
+    async getProfileAvatar({ currentUser }: { currentUser: Prisma.UserWhereUniqueInput }): Promise<{ signedUrl: string }> {
 
 
         const params = {
-            where: { id: user.id },
+            where: { id: currentUser.id },
             select: { avatarS3FileName: true, avatarS3Folder: true }
         };
 
         const userInfo = await this.findUser(params);
 
+        let signedUrl = '';
 
-        if (!userInfo?.avatarS3FileName || !userInfo?.avatarS3Folder) {
-            throw new BadRequestException('S3 file name and folder not found');
+        if (userInfo?.avatarS3FileName && userInfo?.avatarS3Folder) {
+
+            const { avatarS3FileName: fileName, avatarS3Folder: folder } = userInfo;
+
+            const result = await this.uploadService.getPresignedReadUrl({ fileName, folder }, { expiresIn: 24 * 60 * 60 });
+            signedUrl = result.signedUrl;
         }
 
-        const fileName = userInfo.avatarS3FileName;
-        const folder = userInfo.avatarS3Folder;
-
-        const { signedUrl } = await this.uploadService.getPresignedReadUrl({ fileName, folder }, { expiresIn: 24 * 60 * 60 });
 
         return { signedUrl };
 
@@ -87,7 +88,7 @@ export class UserService {
 
         const params = {
             where: { id: user.id },
-            select: { avatarS3FileName: true, avatarS3Folder: true }
+            omit: { password: true }
         };
 
         const userInfo = await this.findUser(params);
@@ -97,16 +98,27 @@ export class UserService {
     }
 
 
-    async getUsers({ user }: { user: Prisma.UserWhereUniqueInput }):Promise<IUser[]> {
+    async getUsers({ user }: { user: Prisma.UserWhereUniqueInput }): Promise<IUser[]> {
 
         // Get All users expect the logged user
         const params = {
-            where: { id: { not : user.id} },
+            where: { id: { not: user.id } },
         };
 
         const users = await this.findUsers(params);
 
         return users as IUser[];
+
+    }
+
+
+    async updateUserProfile({ user, updatedFields }: { user: Prisma.UserWhereUniqueInput, updatedFields: Prisma.UserUpdateInput }): Promise<IUser> {
+
+        const params = { where: { id: user.id }, data: updatedFields };
+
+        const updatedUser = await this.prisma.user.update(params);
+
+        return updatedUser as IUser;
 
     }
 
