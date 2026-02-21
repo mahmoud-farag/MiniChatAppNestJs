@@ -6,17 +6,21 @@ import { Public } from 'src/common/decorators/public.decorator';
 @Controller('auth')
 export class AuthController {
 
-    constructor(private readonly authService: AuthService) {}
+    constructor(private readonly authService: AuthService) { }
 
     @Public()
-    @Post('sign-up')
-    signup(@Body() reqBody: CreateUserDto) {
-        return this.authService.signup(reqBody);
+    @Post('signUp')
+    async signup(@Body() reqBody: CreateUserDto) {
+        const response = await this.authService.signup(reqBody);
+
+        return { message: "User signed up successfully", data: response };
     }
 
     @Public()
-    @Post('sign-in')
-    signin(@Body() reqBody: SigninUserDto){
-        return this.authService.signin(reqBody);
+    @Post('signIn')
+    async signin(@Body() reqBody: SigninUserDto) {
+        const response = await this.authService.signin(reqBody);
+
+        return { message: "User signed in successfully", data: response };
     }
 }
