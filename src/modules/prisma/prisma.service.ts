@@ -5,7 +5,8 @@ import { PrismaClient } from '@prisma/client';
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {
   constructor() {
     super({
-      log: ['query', 'error', 'warn'], // remove 'query' in production
+      log: ['error', 'warn'],
+      // log: ['query', 'error', 'warn'], // remove 'query' in production
       // datasources - Prisma auto-detects DATABASE_URL from the .env file
       // datasources: {
       //   db: {

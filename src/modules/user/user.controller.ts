@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { UploadService } from '../upload/upload.service';
 import { S3FoldersEnum } from 'src/common/enums';
 import type { IRequestWithUser } from 'src/common/inderfaces';
+import { v4 as uuidv4 } from 'uuid';
 
 
 
@@ -52,19 +53,27 @@ export class UserController {
         const folder = S3FoldersEnum.AVATARS_IMAGES;
         const currentUser = req.user;
 
-        const result = await this.uploadService.getPresignedUploadUrl(
-            { fileName: body.fileName, folder, contentType: body.contentType },
+
+        if (!body.fileName || !body.contentType)
+            throw new BadRequestException('File name and content type are required');
+
+        const fileName = body.fileName;
+        const normalizedFileName = `${uuidv4()}-${fileName}`;
+
+        // *) get the presigned upload url
+        const { uploadUrl } = await this.uploadService.getPresignedUploadUrl(
+            { fileName: normalizedFileName, folder, contentType: body.contentType },
             { expiresIn: 24 * 60 * 60 },
         );
 
-        const { key } = result;
 
-        if (!key)
-            throw new BadRequestException('Key not generate ');
+        // *) delete the previous avatar if exists
+        await this.userService.deletePrevAvatar({ currentUser });
 
-        await this.userService.updateUserProfile({ user: currentUser, updatedFields: { avatarS3FileName: key, avatarS3Folder: folder } });
+        // *) update the user profile with the new avatar
+        await this.userService.updateUserProfile({ currentUser, updatedFields: { avatarS3FileName: normalizedFileName, avatarS3Folder: folder } });
 
-        return { message: 'Presigned URL generated successfully', data: result };
+        return { message: 'Presigned URL generated successfully', data: { uploadUrl } };
 
     }
 

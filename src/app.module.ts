@@ -7,6 +7,7 @@ import { PrismaModule } from './modules/prisma/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from './common/guards';
 import { UploadModule } from './modules/upload/upload.module';
+import { S3Module } from './modules/s3/s3.module';
 
 
 @Module({
@@ -21,6 +22,7 @@ import { UploadModule } from './modules/upload/upload.module';
     AuthModule, 
     PrismaModule,
     UploadModule,
+    S3Module,
   ],
   controllers: [],
   providers: [

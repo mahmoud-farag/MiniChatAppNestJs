@@ -3,6 +3,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/modules/prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { IUser } from 'src/common/inderfaces';
+import { S3Service } from '../s3/s3.service';
 
 
 
@@ -12,6 +13,7 @@ export class UserService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
+        private readonly s3Service: S3Service,
     ) { }
 
 
@@ -112,13 +114,31 @@ export class UserService {
     }
 
 
-    async updateUserProfile({ user, updatedFields }: { user: Prisma.UserWhereUniqueInput, updatedFields: Prisma.UserUpdateInput }): Promise<IUser> {
+    async updateUserProfile({ currentUser, updatedFields }: { currentUser: Prisma.UserWhereUniqueInput, updatedFields: Prisma.UserUpdateInput }): Promise<IUser> {
 
-        const params = { where: { id: user.id }, data: updatedFields };
+        const params = { where: { id: currentUser.id }, data: updatedFields };
 
         const updatedUser = await this.prisma.user.update(params);
 
         return updatedUser as IUser;
+
+    }
+
+    async deletePrevAvatar({ currentUser }: { currentUser: Prisma.UserWhereUniqueInput }) {
+
+        const params = {
+            where: { id: currentUser.id },
+            select: { avatarS3FileName: true, avatarS3Folder: true }
+        };
+
+        const userInfo = await this.findUser(params);
+
+        if (userInfo?.avatarS3FileName && userInfo?.avatarS3Folder) {
+
+            const { avatarS3FileName: fileName, avatarS3Folder: folder } = userInfo;
+
+            await this.s3Service.deleteObject({ fileName, folder });
+        }
 
     }
 
