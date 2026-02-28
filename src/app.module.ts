@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AuthGuard } from './common/guards';
 import { UploadModule } from './modules/upload/upload.module';
 import { S3Module } from './modules/s3/s3.module';
+import { ChatGateway } from './chatGateway/chat.gateway';
 
 
 @Module({
@@ -17,9 +18,9 @@ import { S3Module } from './modules/s3/s3.module';
       envFilePath: '.env',
       cache: true,
     }),
-    UserModule, 
-    MessageModule, 
-    AuthModule, 
+    UserModule,
+    MessageModule,
+    AuthModule,
     PrismaModule,
     UploadModule,
     S3Module,
@@ -30,6 +31,7 @@ import { S3Module } from './modules/s3/s3.module';
       provide: APP_GUARD,
       useClass: AuthGuard,
     },
+    ChatGateway,
   ],
 })
-export class AppModule {}
+export class AppModule { }

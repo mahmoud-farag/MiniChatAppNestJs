@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { LoggingInterceptor, ResponseWrapperInterceptor } from './common/interceptors';
 import { AllExceptionsFilter } from './common/errors';
+import { InternalServerErrorException } from '@nestjs/common';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -17,8 +18,14 @@ async function bootstrap() {
 
 
 
+  const frontUrl = process.env.FRONT_URL;
+
+  if (!frontUrl)
+    throw new InternalServerErrorException('FRONT_URL is not defined');
+
+
   app.enableCors({
-    origin: ['http://localhost:5173'],
+    origin: [frontUrl],
     methods: '*',
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,
